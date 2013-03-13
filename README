@@ -1,0 +1,10 @@
+Windows create symlinks:
+
+In C:\Program Files (x86)\Vim
+	mklink _vimrc [$HOME]\.vim\_win_vimrc
+
+In C:\Program Files (x86)\Vim\vim73
+	mklink mswin.vim [$HOME]\.vim\mswin.vim
+
+Linux instructions:
+TBD
