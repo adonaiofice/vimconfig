@@ -1,5 +1,6 @@
 " standard functions:
 :set nu
+:colorscheme desertEx
 
 " PATHOGEN ========================
 ":filetype off
@@ -8,14 +9,6 @@
 " ======================== PATHOGEN
 
 " GENERAL =================================================
-
-" Use instead of vimfiles on windows
-if has('win32') || has ('win64')
-	set runtimepath ^=$HOME\.vim ", $HOME/vimfiles,$VIMRUNTIME,$VIM,$HOME/vimfiles/after,$HOME/.vim/after
-	set fileformats=unix,dos,mac
-endif
-
-:colorscheme desertEx
 
 :syntax on
 syntax enable
@@ -224,6 +217,11 @@ nnoremap ,cd :cd %:p:h<CR>:pwd<CR>
 
 " Directory mapping =============================
 
+" Use instead of vimfiles on windows
+if has('win32') || has ('win64')
+	set runtimepath ^=$HOME\.vim ", $HOME/vimfiles,$VIMRUNTIME,$VIM,$HOME/vimfiles/after,$HOME/.vim/after
+	set fileformats=unix,dos,mac
+endif
 
 " Set vim swap, vimundo, and vim views stuff
 "if has('win32') || has ('win64')

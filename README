@@ -1,3 +1,6 @@
+New repo:
+	git clone git://github.com/adonaiofice/vimconfig ~/.vim
+
 Windows create symlinks:
 
 In C:\Program Files (x86)\Vim

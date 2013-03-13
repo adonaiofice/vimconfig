@@ -9,14 +9,6 @@
 
 " GENERAL =================================================
 
-" Use instead of vimfiles on windows
-if has('win32') || has ('win64')
-	set runtimepath ^=$HOME\.vim ", $HOME/vimfiles,$VIMRUNTIME,$VIM,$HOME/vimfiles/after,$HOME/.vim/after
-	set fileformats=unix,dos,mac
-endif
-
-:colorscheme desertEx
-
 :syntax on
 syntax enable
 
@@ -43,6 +35,7 @@ set nocompatible
 :highlight Visual term=bold
 :set t_Co=256
 :set nu
+:colorscheme desertEx
 :set autoindent
 :filetype indent on
 
@@ -224,6 +217,11 @@ nnoremap ,cd :cd %:p:h<CR>:pwd<CR>
 
 " Directory mapping =============================
 
+" Use instead of vimfiles on windows
+if has('win32') || has ('win64')
+	set runtimepath ^=$HOME\.vim ", $HOME/vimfiles,$VIMRUNTIME,$VIM,$HOME/vimfiles/after,$HOME/.vim/after
+	set fileformats=unix,dos,mac
+endif
 
 " Set vim swap, vimundo, and vim views stuff
 "if has('win32') || has ('win64')
@@ -300,7 +298,7 @@ if has('win32')
 endif
 
 if has("gui_running")
-	:so $HOME/.vim/.gvimrc
+	:so $HOME\vimfiles\_gvimrc
 endif
 
 " ==================================================== GVIM
