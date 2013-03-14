@@ -1,0 +1,368 @@
+" standard functions:
+:set nu
+
+" PATHOGEN ========================
+":filetype off
+":execute pathogen#infect()
+":call pathogen#helptags()
+" ======================== PATHOGEN
+
+" GENERAL =================================================
+
+" Use instead of vimfiles on windows
+if has('win32') || has ('win64')
+	set runtimepath ^=$HOME\.vim ", $HOME/vimfiles,$VIMRUNTIME,$VIM,$HOME/vimfiles/after,$HOME/.vim/after
+	set fileformats=unix,dos,mac
+endif
+
+:colorscheme desertEx
+
+:syntax on
+syntax enable
+
+" Ctrl-t to open new tab:
+:nnoremap <C-t> :tabnew<CR>
+":nnoremap <C-w> :tabclose<CR>
+:nnoremap <C-x> :tabclose<CR>
+:inoremap <C-t> <Esc>:tabnew<CR>
+:inoremap <C-w> <Esc>:tabclose<CR>
+
+" Open files always in new tabs - doesn't seem to work?
+"autocmd VimEnter * tab all
+"autocmd BufAdd * exe 'tablast | tabe "' . expand( "<afile") .'"'
+
+" Let Vim do its work
+set nocompatible
+
+" Syntax for Python
+"autocmd FileType python set complete+=k~/.vim/syntax/python.vim isk+=.,(
+
+"Colors, indent
+:hi normal ctermbg=black cterm=bold
+:set background=dark
+:highlight Visual term=bold
+:set t_Co=256
+:set nu
+:set autoindent
+:filetype indent on
+
+"Remove any cursorline:
+hi CursorLine cterm=NONE
+
+set showcmd "shows pressed keys/commands
+set ruler	" show ruler
+
+" Make arrow / other keys work:
+if !has('win32') && !has('win64')
+	set term=$TERM
+endif
+
+" Use incremental searching
+set incsearch
+
+" save folded views
+:au BufWinLeave ?* silent! mkview 1
+:au BufWinEnter ?* silent! loadview 1
+
+" Use smart case sensitivity for searching
+set ignorecase
+set smartcase
+set title
+
+" automatic folding
+":set foldmethod=indent
+:set nofoldenable
+:set foldlevelstart=99
+
+" set commenting style for /**/
+" /// -> insert javadoc comment - not working yet
+"iab <buffer> /// /** <Enter> * <Enter>*/<C-v><Up>
+
+set shortmess+=filmnrxoOtT      " abbrev. of messages (avoids 'hit enter')
+set viewoptions=folds,options,cursor,unix,slash " better unix / windows compatibility
+set virtualedit=onemore         " allow for cursor beyond last character
+set history=1000                 " Store a ton of history (default is 20)
+set hidden                      " allow buffer switching without saving
+
+set listchars=tab:,.,trail:.,extends:#,nbsp:. " Highlight problematic whitespace
+
+"Show trailing spaces:
+set listchars=tab:>-,trail:·,eol:$
+nmap <silent> <leader>s :set nolist!<CR>
+
+" Use the wildmenu feature
+set wildmenu
+
+" Remove any trailing whitespace that is in the file
+"autocmd BufRead,BufWrite * if ! &bin | silent! %s/\s\+$//ge | endif
+
+" Got backspace?
+set backspace=2
+
+" Since I use linux, I want this
+let g:clipbrdDefaultReg = '+'
+
+" When I close a tab, remove the buffer
+set nohidden
+
+" COMPLETION POPUP MENU ========================
+
+" Display longest common text of all matches instead of just 1st item
+":set completeopt=menu,longest
+
+:inoremap <expr> <CR>	pumvisible() ? "\<C-y>" : "\<CR>"
+
+" ======================== COMPLETION POPUP MENU
+
+" ================================================= GENERAL
+
+
+" Key Re-Mappings ===============================
+
+" Enable plugins, set mapleader
+filetype plugin on
+let mapleader = ","
+
+" F-Keys ===================================================
+
+" Map F2 to <paste> mode
+:set pastetoggle=<F2>
+
+" Map F4 to highlight search
+:noremap <F4> :set hlsearch! hlsearch?<CR>
+
+" Map F5 to disable auto indenting:
+:nnoremap <F5> :setl noai nocin nosi inde=<CR>
+"
+" <F8> Toggle line numbers and fold column for easy copying
+nnoremap <F8> :set nonumber!<CR>:set foldcolumn=0<CR>
+
+" Map F6 to set relative numbers, F7 to go back to normal
+nnoremap <F6> :set relativenumber!<CR>:set foldcolumn=0<CR>
+nnoremap <F7> :set nu<CR>
+
+" map key to toggle folding or fold new section in visual mode
+" inoremap <F3> <C-O>za
+" nnoremap <F3> za
+" onoremap <F3> <C-C>za
+" vnoremap <F3> zf
+
+"=================================================== F-Keys
+
+" Use back-tick as esc
+:inoremap ` <Esc>
+:vnoremap ` <Esc>
+
+" set % to go to end of matching brace
+:inoremap } }<Left><c-o>%<c-o>:sleep 500m<CR><c-o>%<c-o>a
+:inoremap ] ]<Left><c-o>%<c-o>:sleep 500m<CR><c-o>%<c-o>a
+:inoremap ) )<Left><c-o>%<c-o>:sleep 500m<CR><c-o>%<c-o>a
+
+" Change tabs easily!!!
+" map <S-H> gT
+" map <S-L> gt
+
+" map space key to toggle folding or fold selection in visual mode
+" if not in fold, act as normal space (move right)
+nnoremap <silent> <Space> @=foldlevel('.')?'za':'\<lt>Right>'<CR>
+vnoremap <Space> zf
+
+" Easier moving in windows
+noremap <C-j> <C-W>j
+noremap <C-k> <C-W>k
+noremap <C-l> <C-W>l
+noremap <C-h> <C-W>h
+
+"Alt+leftarrow will go one window left, etc.
+nmap <silent> <A-Up> :wincmd k<CR>
+nmap <silent> <A-Down> :wincmd j<CR>
+nmap <silent> <A-Left> :wincmd h<CR>
+nmap <silent> <A-Right> :wincmd l<CR>
+
+" Easier resizing windows
+nnoremap <A-Up> <C-w>+
+nnoremap <A-Down> <C-w>-
+nnoremap <A-Left> <C-w><
+nnoremap <A-Right> <C-w>>
+
+" Wrapped lines goes down/up to next row, rather than next line in file.
+nnoremap j gj
+nnoremap k gk
+nnoremap <Down> gj
+nnoremap <Up> gk
+vnoremap j gj
+vnoremap k gk
+
+" <ENTER> inserts blank line below, <SHIFT>+<ENTER> inserts blank line above
+"nnoremap <CR> o<ESC>
+"nnoremap <S-CR> O<ESC>
+""""" NOTE - Console interprets S-CR the same as CR, therefore cannot be remapped
+" Remap to C-J and C-K:
+nnoremap <C-j> o<ESC>
+nnoremap <C-k> O<ESC>
+nnoremap <C-R> O<ESC>
+
+" Scroll the viewport faster
+nnoremap <C-Up> 3<C-Up>
+nnoremap <C-Down> 3<C-Down>
+
+"Remap ,z to zfa} EDIT: now Ctrl+f
+nmap <C-f> zfa}
+"nmap <C-o> zo
+"nmap <C-l> zc
+
+" Not working: Map Ctrl-c to copy. "*p to paste between terminals:
+" vmap <C-c> :<Esc>`>a<CR><Esc>mx`<i<CR><Esc>my'xk$v'y!xclip -selection c<CR>u
+" map <Insert> :set paste<CR>i<CR><CR><Esc>k:.!xclip -o<CR>JxkJx:set nopaste<CR>
+
+" set ,cd - working directory into current directory of file
+nnoremap ,cd :cd %:p:h<CR>:pwd<CR>
+
+
+"================================ Key Re-Mappings
+
+
+" Directory mapping =============================
+
+
+" Set vim swap, vimundo, and vim views stuff
+"if has('win32') || has ('win64')
+" Set viewdir
+:set viewdir=$HOME/.vim/vimviews
+" Swap files:
+:set directory=$HOME/vimswap
+" Undo files for persistent undo:
+:set undodir=$HOME/.vim/vimundo
+
+"endif
+
+
+" DEPRECATED
+" backups, persistent undo and view files
+"set backup                     " backups are nice ...
+"set backupdir=$HOME/vimfiles/backup
+"if has('persistent_undo')
+    "set undofile               so is persistent undo ...
+    "set undolevels=200         maximum number of changes that can be undone
+    "set undoreload=5000        maximum number lines to save for undo on a buffer reload
+"endif
+
+" AUTOMATIC BACKUPS =====================================================
+" backups set to ~/vimbackup/date
+set backup
+
+"Create a backup folder, I like to have it in $HOME/vimbackup/date/
+let day = strftime("%Y.%m.%d")
+let backupdir = $HOME."/.vim/vimbackup/".day
+silent! let xyz = mkdir(backupdir, "p")
+
+"Set the backup folder
+let cmd = "set backupdir=".backupdir
+execute cmd
+
+"Create an extention for backup file, useful when you are modifying the
+"same file multiple times in a day. I like to have an extention with
+"time hour.min.sec
+let time = strftime(".%H.%M.%S")
+let cmd = "set backupext=". time
+execute cmd
+
+"test.cpp is going to be backed up as HOME/vimbackup/date/test.cpp.hour.min.sec
+" ===================================================== AUTOMATIC BACKUPS
+
+"set backupdir=$HOME\vimfiles\vimtmp,.
+
+"Copy and paste between different Vim sessions
+nmap <C-Y> :!echo ""> $HOME/.vim/.vi_tmp<CR><CR>:w! $HOME/.vim/.vi_tmp<CR>
+vmap <C-Y> :w! $HOME/.vim/.vi_tmp<CR>
+nmap <C-P> :r $HOME/.vim/.vi_tmp<CR>
+
+
+"============================== Directory mapping
+
+" PLUGINS =================================================
+
+"Nerd_commenter
+let mapleader = ","
+helptags $HOME/.vim/doc
+nmap <leader>w :w!<CR>
+
+
+
+"================================================== PLUGINS
+
+
+" GVIM ====================================================
+
+if has('win32')
+" fix Redo key binding
+	nmap <C-R> <C-R> <cr>
+endif
+
+if has("gui_running")
+	:so $HOME/.vim/.gvimrc
+endif
+
+" ==================================================== GVIM
+
+
+
+" UNTESTED FUNCTIONS ============================
+
+function! InitializeDirectories()
+  let separator = "."
+  let parent = $HOME
+  let prefix = '.vim'
+  let dir_list = {
+			  \ 'backup': 'backupdir',
+			  \ 'views': 'viewdir',
+			  \ 'swap': 'directory',
+			  \ 'undo': 'undodir' }
+
+  for [dirname, settingname] in items(dir_list)
+	  let directory = parent . '/' . prefix . dirname . "/"
+	  if exists("*mkdir")
+		  if !isdirectory(directory)
+			  call mkdir(directory)
+		  endif
+	  endif
+	  if !isdirectory(directory)
+		  echo "Warning: Unable to create backup directory: " . directory
+		  echo "Try: mkdir -p " . directory
+	  else
+          let directory = substitute(directory, " ", "\\\\ ", "")
+          exec "set " . settingname . "=" . directory
+	  endif
+  endfor
+endfunction
+"call InitializeDirectories()
+
+function! NERDTreeInitAsNeeded()
+    redir => bufoutput
+    buffers!
+    redir END
+    let idx = stridx(bufoutput, "NERD_tree")
+    if idx > -1
+        NERDTreeMirror
+        NERDTreeFind
+        wincmd l
+    endif
+endfunction
+
+" Detecting system names:
+"if has("win32")
+  ""Windows options here
+"else
+  "if has("unix")
+    "let s:uname = system("uname")
+    "if s:uname == "Darwin\n"
+      ""Mac options here
+    "endif
+  "endif
+"endif
+"Although, to be completely transparent, my actual .vimrc reads:
+
+"let s:uname = system("echo -n \"$(uname)\"")
+"if !v:shell_error && s:uname == "Linux"
+
+"============================= UNTESTED FUNCTIONS

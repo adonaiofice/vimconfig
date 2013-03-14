@@ -9,8 +9,8 @@ if has('win32')
     :noremap <c-v> <c-v>
 endif
 
-if has ('win32') || has ('win64')
-    so ~/.vim/.eclimrc
-else
-    eclimd -f ~/.vim/.eclimrc
-endif
+"if has ('win32') || has ('win64')
+    "so ~/.vim/.eclimrc
+"else
+    "eclimd -f ~/.vim/.eclimrc
+"endif

@@ -1,0 +1,144 @@
+#include <tesla/interrupt.h>
+
+#include <error.h>
+#include <tms570/system.h>
+
+int irq_set_handler(IRQ_num_t isr_source, irq_functionPTR_t IRQ_handler)
+{
+    int ret_status = 1;
+    /** map address of function to appropriate interrupt source */
+    /**
+     * Besides this basic error checking, unsure of the best way to prevent invalid / reserved values
+     * that are still within enum range - i.e. can input an int casted as enum, and would still be valid
+     */
+
+    /**
+     * Check if protected interrupt
+     */
+    if(isr_source == EPROTECTED)
+    {
+        ret_status = EPROTECTED;
+    }
+    /**
+     * Check if out of bounds
+     */
+    else if(isr_source < ESM_HIGH || isr_source > INTERRUPT_TABLE_MAX_SIZE)
+    {
+        ret_status = EPARAM;
+    }
+    else
+    {
+        /**
+         * Map handler to proper location
+         */
+        vimRAM->ISR[isr_source + 1] = IRQ_handler;
+        ret_status = SUCCESS;
+    }
+    return -ret_status;
+}
+
+irq_functionPTR_t irq_get_handler(IRQ_num_t isr_source)
+{
+    irq_functionPTR_t ret_handler = 0;
+
+    /** Return 0 if parameter out of bounds */
+    if(isr_source < ESM_HIGH || isr_source > INTERRUPT_TABLE_MAX_SIZE)
+    {
+        ret_handler = 0;
+    }
+    else
+    {
+        ret_handler = vimRAM->ISR[isr_source + 1];
+    }
+    return ret_handler;
+}
+
+int irq_set_maskable(IRQ_num_t isr_source, uint8_t set)
+{
+    int ret_status = 1;
+
+    /**
+     * Check if protected interrupt
+     */
+    if(isr_source == EPROTECTED || isr_source == ESM_HIGH)
+    {
+        ret_status = EPROTECTED;
+    }
+    /**
+     * Check if out of bounds or param not valid
+     */
+    else if(isr_source < ESM_HIGH || isr_source > INTERRUPT_TABLE_MAX_SIZE ||
+            (set != IRQ_NON_MASKABLE && set != IRQ_MASKABLE))
+    {
+        ret_status = EPARAM;
+    }
+    else
+    {
+        /**
+         * Set priority as maskable or not
+         */
+        vimREG->FIRQPR[isr_source + 1] = (set == IRQ_NON_MASKABLE) ? SYS_FIQ : SYS_IRQ;
+        ret_status = SUCCESS;
+    }
+
+    return -ret_status;
+}
+
+int irq_enable(IRQ_num_t isr_source)
+{
+    int ret_status = 1;
+    int index = 0;
+    int shift = 0;
+
+    /**
+     * Check if protected interrupt
+     */
+    if(isr_source == EPROTECTED)
+    {
+        ret_status = EPROTECTED;
+    }
+    /**
+     * Check if out of bounds
+     */
+    else if(isr_source < ESM_HIGH || isr_source > INTERRUPT_TABLE_MAX_SIZE)
+    {
+        ret_status = EPARAM;
+    }
+    else
+    {
+        /** Access appropriate register and set bit */
+        vimREG->REQMASKSET[isr_source/(sizeof(int)*8)] |= 1 << (isr_source % (sizeof(int)*8));
+        ret_status = SUCCESS;
+    }
+
+    return -ret_status;
+}
+
+int irq_disable(IRQ_num_t isr_source)
+{
+    int ret_status = 1;
+
+    /**
+     * Check if protected interrupt
+     */
+    if(isr_source == EPROTECTED)
+    {
+        ret_status = EPROTECTED;
+    }
+    /**
+     * Check if out of bounds
+     */
+    else if(isr_source < ESM_HIGH || isr_source > INTERRUPT_TABLE_MAX_SIZE)
+    {
+        ret_status = EPARAM;
+    }
+    else
+    {
+        /** Access appropriate register and clear bit */
+        vimREG->REQMASKCLR[isr_source/(sizeof(int)*8)] = 1 << (isr_source % (sizeof(int)*8));
+        ret_status = SUCCESS;
+    }
+
+    return -ret_status;
+
+}

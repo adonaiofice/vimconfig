@@ -41,7 +41,7 @@ setlocal dictionary=
 setlocal nodiff
 setlocal equalprg=
 setlocal errorformat=
-setlocal noexpandtab
+setlocal expandtab
 if &filetype != 'vim'
 setlocal filetype=vim
 endif
@@ -88,7 +88,7 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
-setlocal shiftwidth=8
+setlocal shiftwidth=4
 setlocal noshortname
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -103,22 +103,22 @@ setlocal synmaxcol=3000
 if &syntax != 'vim'
 setlocal syntax=vim
 endif
-setlocal tabstop=8
+setlocal tabstop=4
 setlocal tags=
 setlocal textwidth=78
 setlocal thesaurus=
-setlocal noundofile
+setlocal undofile
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 97 - ((15 * winheight(0) + 16) / 32)
+let s:l = 12 - ((11 * winheight(0) + 16) / 32)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-97
-normal! 067l
+12
+normal! 0
 let &so = s:so_save | let &siso = s:siso_save
 doautoall SessionLoadPost
 " vim: set ft=vim :

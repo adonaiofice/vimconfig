@@ -1,0 +1,136 @@
+TO DO:
+
+CURRENT:
+
+CAN:
+- can send 0 to 8 bytes of data - priority handled in hardware (i.e. bytes do not get interrupted)
+- masking: prevents hardware from accepting messages that do not fit mask => do not get put into message box
+- need 2 configurations:
+	- main - bit rate, identifier extension, ram parity, automatic retransmission (?)
+	- config message:
+		- message id
+		- byte length
+		- interrupt priority / enable interrupts
+		- transmit / receive
+		- mask
+
+1.  570: Integrate all current driver stuff into 1 base project, talk w/ Hugo + check into Stash
+	- create separate driver folders, modify library Makefiles (library Makefile & main Makefile)
+	- include Demo Apps w/ RTOS, modify appropriate image Makefiles (and main Makefile?)
+	- MibSPI - first get working w/ interrupts (FRAM board)
+	- ADC
+		* integrate with RTOS driver (FIFO depth, etc.)
+		* add in RTOS application
+		* add in example magnitude compare for reference
+
+2.  570: Complete Hardware abstraction layer functions, interfacing with drivers
+	- Plan out API, what sort of requirements, review, implement
+	- ADC driver
+	- CAN driver - review requirements, setup, etc.
+
+3.  570: DMA Driver for SPI, CAN, ADC
+
+4.  430: Get keyfob LF state machine working
+
+4.  570: get DMA working with generated drivers
+5.  570: get SPI and DMA working with interrupts
+6.  570: get DMA working in RTOS
+7.  570: get DMA working with CAN and ADC
+8.  570: set up potential HAL API for DMA
+
+9.  570: DMA Reference
+
+10. Python: configure vim for Python use (_python_vimrc - manual)
+
+11. Test interface stuff - gather requirements
+
+Linux:
+11. Configure VIMRC and plugins
+12. Fix any broken plugins (Linux and Windows) - include different git branches
+14. Test out build & debug with CCS
+15. Modify bashrc to only display last 2/3 directories
+
+Vim:
+1.  Take note of all plugins - start brand new vim directory
+2.  Set up git repo on github, add vim directory
+3.  Add pathogen (as submodule?)
+4.  Move Eclim settings to separate _eclimrc file
+	if has('win32')
+		so _eclimrc
+	endif
+	- linux should automatically source it
+5.  Set both OSes to same vimpath ($HOME/vimconfig/vimrc) - no hidden files since naming structure different
+6.  Include sessions folder into $HOME/vimconfig/sessions - don't need OS-specific folders
+
+
+PIPELINE:
+13. Connect internet to Linux machine (probably contact helpDesk)
+
+1.  570: look into RTOS demo code, create reference document for self (usual format)
+2.  570: Set up counting semaphore for CAN interrupt handler
+
+3.  RTOS: Read about queues + gatekeeper function
+4.  Watchdog configuration
+
+5.  Python: Learn Python on Windows (or Linux) :P
+6.  Python: Read Python intro book
+7.  Python: Complete first Python tutorial w/ Windows
+8.  Python: read text (csv) files
+9.  Python: generate C code by putting csv files into structs
+
+17. Read about RF (theory)
+
+----
+8
+
+Question:
+
+
+Learning objectives:
+
+1. Become familiar with automotive communication protocols such as CAN and LIN, and the software involved in interacting
+   with the hardware peripherals.
+   - Familiarize self with protocols through personal research
+   - Find example software that uses CAN or LIN, and understand how it works
+   - Customize my own software to include CAN / LIN in the context of a real-time operating system
+
+   - Having successfully made or modified drivers that allow a microcontroller to communicate over CAN or LIN
+
+2. Establish DMA (direct memory access) functionality with peripherals such as ADC, SPI, and CAN with an ARM processor
+   - Understand how DMA works on the specific processor
+   - Refer to examples for other similar processors and understand how they work
+   - Create DMA code that works on the processor for the peripherals, in the context of an operating system
+
+   - Having a working DMA protocol that works on the processor and communicates with the various peripherals successfully
+
+3. Create a bootloader for the MSP430 that can load over a SPI bus
+  - Become familiar with the SPI protocol through code examples and setting it up for the MSP430
+  - Test out default bootloader code over UART and figure out how it works
+  - Modify existing bootloader code to be able to load into FRAM memory and to work over a SPI connection
+
+  - Having a working bootloader that can communicate over SPI and perform all necessary functionality, including writing
+    new code into memory, and having the capability to overwrite itself only when necessary
+
+NOTE:
+
+* CCS Compilation:
+	- Build command: ${CCS_UTILS_DIR}/bin/gmake -j ${NUMBER_OF_PROCESSORS} [-s] -k
+
+* Read about RF theory
+
+RTOS:
+* use Doxygen to get structure of RTOS code
+
+
+
+Stuff I've done:
+* Investigate BLE technology for keyfob applications, look into demo code to modify aspects
+* Evaluate RTOS system and place demo on to evaluation board to determine viability for future applications
+* Research MCUs to determine the most appropriate
+* Created state diagrams and IO list for car doorhandle project, linked IOs to lin commands
+* Modified example RF code to change transmitted packets and frequency modulation modes
+* Worked with FreeRTOS to create tasks dependent on interrupts that occur periodically and can pass messages to each other
+* Note: all on ARM processor
+* Programmed a demo for 2-way rf communication
+* Set up CAN and SPI drivers for communication between a TMS570 ARM Cortex R4F and MSP430 (SPI), 2 570s for CAN
+

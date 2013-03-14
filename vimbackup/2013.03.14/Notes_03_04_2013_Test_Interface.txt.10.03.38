@@ -1,0 +1,5 @@
+Requirements:
+1. Output CAN messgaes (700 / 570 -> ...) indicating ADC channels + GPIO - Flash first, then RAM
+- every 10 ms or so
+2. Geneology flasher - program into RAM, get data from BMBs
+3. GPIO / PWM stuff
