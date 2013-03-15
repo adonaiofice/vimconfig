@@ -1,0 +1,51 @@
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch master
+# Your branch is behind 'origin/master' by 1 commit, and can be fast-forwarded.
+#
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#	modified:   .eclimrc
+#	modified:   .gvimrc
+#	modified:   .vimrc
+#	modified:   README
+#	new file:   vimbackup/2013.03.13/.eclimrc.18.12.26
+#	new file:   vimbackup/2013.03.13/.eclimrc.18.44.47
+#	new file:   vimbackup/2013.03.13/.gvimrc.16.26.28
+#	new file:   vimbackup/2013.03.13/.gvimrc.16.37.14
+#	new file:   vimbackup/2013.03.13/.gvimrc.16.37.49
+#	new file:   vimbackup/2013.03.13/.gvimrc.16.39.51
+#	new file:   vimbackup/2013.03.13/.gvimrc.17.34.06
+#	new file:   vimbackup/2013.03.13/.gvimrc.17.34.27
+#	new file:   vimbackup/2013.03.13/.vimrc.16.26.28
+#	new file:   vimbackup/2013.03.13/.vimrc.17.34.27
+#	new file:   vimbackup/2013.03.13/COMMIT_EDITMSG.18.50.40
+#	new file:   vimbackup/2013.03.13/bcf_module.mk.18.12.26
+#	new file:   vimbackup/2013.03.13/debug.c.18.12.26
+#	new file:   vimbackup/2013.03.14/COMMIT_EDITMSG.09.11.31
+#	new file:   vimbackup/2013.03.14/MERGE_MSG.14.37.08
+#	new file:   vimbackup/2013.03.14/README.19.07.39
+#	new file:   vimbackup/2013.03.14/bcf_module.mk.14.40.58
+#	new file:   vimbackup/2013.03.14/can.h.14.40.58
+#	new file:   vimbackup/2013.03.14/can_api.c.14.40.58
+#	new file:   vimbackup/2013.03.14/interrupt.c.14.40.58
+#	new file:   vimviews/~=+.gvimrc=1.vim
+#	new file:   vimviews/~=+.vim=+.eclimrc=1.vim
+#	new file:   vimviews/~=+.vim=+.gvimrc=1.vim
+#	new file:   vimviews/~=+.vim=+README=1.vim
+#	new file:   vimviews/~=+.vimrc=1.vim
+#	new file:   vimviews/~=+Desktop=+vmware-tools-distrib=+INSTALL=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+.git=+COMMIT_EDITMSG=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+.git=+MERGE_MSG=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+images=+bc=+app=+bcf_module.mk=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+images=+bc=+flash=+bcf_module.mk=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+images=+test=+can=+bcf_module.mk=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+images=+test=+can=+notification.c=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+libraries=+debug=+bcf_module.mk=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+libraries=+freertos=+tms570_sys=+sys_startup.c=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+libraries=+vector_interrupt_manager=+bcf_module.mk=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+libraries=+vector_interrupt_manager=+interrupt.c=1.vim
+#	new file:   vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+include=+tesla=+drivers=+can.h=1.vim
+#

@@ -1,0 +1,115 @@
+/**
+ * Vectored Interrupt Module Interface:
+ *
+ * Steps to enable an interrupt:
+ * 	- irq_set_handler
+ *	- OPT: irq_set_maskable
+ *	- irq_enable
+ *
+ * Disable an interrupt:
+ * 	- irq_disable
+ *
+ */
+
+#ifndef INTERRUPT_H
+#define INTERRUPT_H
+
+#include <tms570/sys_vim.h>
+#include <stdint.h>
+#include <interrupt_table.h>
+
+typedef void (*irq_functionPTR_t)(void);
+
+/**
+ * List of defines:
+ */
+
+#define IRQ_NON_MASKABLE    0
+#define IRQ_MASKABLE        1
+
+
+/*** Interrupt Module methods ***/
+
+/**
+ * @fn int irq_set_handler(IRQ_num_t isr_source, void *IRQ)
+ *
+ * @brief Sets ISR to specified function. If ISR already exists, it will get overwritten with
+ * the IRQ_handler parameter
+ * Interrupt is not active until enable_interrupt function called
+ *
+ * @param isr_source - peripheral interrupt number
+ * @param IRQ_handler - address of interrupt handler function
+ *
+ * @return 0 if successfully mapped handler to interrupt
+ *         Else return one of the following errors:
+ * 	        - EPARAM - invalid parameter
+ *          - EPROTECTED - protected parameter, cannot edit
+ */
+
+int irq_set_handler(IRQ_num_t isr_source, irq_functionPTR_t IRQ_handler);
+
+
+/**
+ * @fn irq_functionPTR_t irq_get(IRQ_num_t isr_source)
+ *
+ * @brief Returns function pointer to current ISR mapped to specified interrupt
+ *
+ * @return pointer to interrupt handler if success, else
+ *      ERRORS:
+ *      	- return 0 if invalid parameter
+ *      	- return pointer to phantomInterrupt (default) if IRQ hasn't been set
+ */
+
+irq_functionPTR_t irq_get_handler(IRQ_num_t isr_source);
+
+
+/**
+ * @fn int irq_set_maskable(IRQ_num_t isr_source, uint8 set)
+ *
+ * @brief Sets IRQ as either maskable (standard IRQ), or nonmaskable (FIQ / NMI priority)
+ *
+ * @param set - IRQ_NON_MASKABLE if nonmaskable
+ *              IRQ_MASKABLE if maskable (default except for IRQ0 & IRQ1)
+ * @return 0 if success, else
+ *      ERRORS:
+ * 	    - EPARAM
+ *      - EPROTECTED - protected parameter, cannot edit
+ */
+
+int irq_set_maskable(IRQ_num_t isr_source, uint8_t set);
+
+
+/**
+ * @fn int irq_enable(IRQ_num_t)
+ *
+ * @brief Enable selected interrupt
+ *
+ * @return 0 if success, else
+ *      ERRORS:
+ *      	- EPARAM
+ *          - EPROTECTED - protected parameter, cannot edit
+ */
+
+int irq_enable(IRQ_num_t isr_source);
+
+
+/**
+ * @fn int irq_disable(IRQ_num_t)
+ *
+ * @brief Disable selected interrupt
+ *
+ * @return 0 if success, else
+ *      ERRORS:
+ *      	- EPARAM
+ *          - EPROTECTED - protected parameter, cannot edit
+ */
+
+int irq_disable(IRQ_num_t isr_source);
+
+/**
+ *  TODO:
+ *  - Set / clear wake_on_interrupt (default = true)
+ *  - Configurable interrupt priorities
+ */
+
+#endif  /* INTERRUPT_H */
