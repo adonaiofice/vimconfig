@@ -1,0 +1,200 @@
+/**
+ * Can Driver Interface
+ *
+ */
+
+#ifndef TESLA_DRIVERS_CAN_H
+#define TESLA_DRIVERS_CAN_H
+
+#include <stdint.h>
+
+#if 0
+typedef CAN_HANDLE uint32_t
+#else
+typedef struct {
+    uint32_t handle
+} CAN_HANDLE;
+#endif
+
+
+
+typedef void (can_rx_ISR_t *) (uint32_t message_ID, const uint8_t * data, uint8_t data_length);
+typedef void (can_tx_ISR_t *) (void);
+
+/*** Driver generic methods ***/
+/**
+ * Open a CAN peripheral. Every peripheral may be opened by one task at a time.
+ * Map interrupt handler for CAN to default
+ *
+ * @param peripheral_id
+ *
+ * @return If positive, a handle to the opened interface.
+ *         If negative, one of the following errors:
+ *         - EPARAM Parameter out of range
+ *         - EDEV_ID Invalid device ID
+ *         - EBUSY Device is already opened
+ */
+int can_open (CAN_HANDLE *h, uint32_t peripheral_id);
+
+typedef struct can_config
+{
+    /**
+     * The baudrate of the bus.
+     *
+     * The maximum allowed baudrate is VCLK/2. The effectively set bandwith
+     * might deviate from this value. - Assume CLK = 100MHz, VCLK = 50MHz must modify
+     * values if clock rate changes
+     *
+     * Default value: 125 kBits/s
+     *
+     * Accepted values, can have preset timing configurations:
+     *      - 1Mbit
+     *      - 500k
+     *      - 250k
+     *      - 125k
+     *
+	 * NOTE: Not implemented. Can reconfigure timing parameters in HalCoGen and bring them over
+     */
+    int bitrate;
+    uint8_t id_extension;   /** Optional */
+    uint8_t enable_ram_parity;
+
+    can_rx_ISR_t can_message_rx_ISR; /** Callback method for message handling task
+                                                 to handle received CAN message*/
+    can_tx_ISR_t can_message_tx_complete; /** Callback method for indicating successful transmission of CAN
+                                            message */
+                                    /** Default functions = NULL
+                                     */
+} can_config_t;
+
+/**
+ * Initialise the CAN peripheral.
+ *
+ * @note Values of 0 in the can_init_t struct are replaced by the defaults as
+ *       described in the comments of the struct.
+ *
+ * @default: Message box 1 = transmit
+ *
+ * Errors: EPARAM, EINV_HANDLE
+ */
+int can_set_config(CAN_HANDLE h, const can_config_t* options);
+
+/**
+ *
+ */
+/*int can_message_config();*/
+
+
+/**
+ * can_transmit_message(uint32_t can_message_ID, uint8_t * data, uint8_t data_length)
+ * @ brief non-blocking call (except for the wait for interface register to be available - minimal time)
+ *          only one task should be using this interface at a time, notably a message-handler task
+ *          The next message may only be transmitted after a TX_Success interrupt has triggered
+ *
+ * @ errors
+ *      - EPARAM
+ */
+int can_transmit_message(uint32_t can_message_ID, uint8_t * data, uint8_t data_length);
+
+
+/**
+ * Interrupt handler:
+ *
+ * - check functions for NULL, don't call
+ * Transmit (mBox 1) - function callback
+ * Receive (mBox 2) -
+ *  1. Get ID, length + data pointer (pointer to IFDATA register)
+ *  function callback - function responsible for handling the received data
+ *  and putting into appropriate message format
+ *
+ */
+
+
+
+
+
+/**
+ * Allow a CAN peripheral to go to sleep mode.
+ *
+ * @note A CAN peripheral will only sleep if all its users have called
+ *       can_sleep.
+ *
+ * Errors: EINV_HANDLE
+ *         ESLEEP The device was already allowed to sleep.
+ */
+int can_sleep(CAN_HANDLE h);
+/**
+ * Require the CAN peripheral to wake up, blocking.
+ *
+ * Errors: EINV_HANDLE
+ *         EBUSY The device was already awake.
+ */
+int can_wakeup(CAN_HANDLE h);
+/**
+ * Close a CAN peripheral. Allows other users access to the peripheral.
+ *
+ * @note The handle will be set to an invalid value, to facilitate finding
+ * bugs due to calling methods with closed handles.
+ *
+ * Errors: EINV_HANDLE
+ */
+int can_close(CAN_HANDLE* h);
+/*** CAN SPECIFIC METHODS ***/
+/**
+ * Acquire the CAN device for use.
+ *
+ * This method should successfully return before any of the other CAN specific
+ * specific methods may be used.
+ *
+ * @note After acquiring an CAN device, its chip select will be high.
+ *
+ * @return CAN_IDLE on success, CAN_BUSY when the CAN device is already
+ *         acquired.
+ * Errors: EINV_HANDLE
+ */
+int can_acquire(CAN_HANDLE h);
+/**
+ * Release an acquired CAN device.
+ *
+ * This will set the chip select high.
+ *
+ * Errors: EINV_HANLDE
+ */
+int can_release(CAN_HANDLE h);
+/**
+ * Transmit data, blocking.
+ *
+ * Errors: EINV_HANDLE
+ *         EBUSY
+ *         EPARAM
+ */
+int can_transmit(CAN_HANDLE h, const uint8_t* data, uint32_t length);
+int can_transmit_char(CAN_HANDLE h, uint8_t data);
+/**
+ * Receive data, blocking.
+ *
+ * Errors: EINV_HANDLE
+ *         EBUSY
+ *         EPARAM
+ */
+int can_receive(CAN_HANDLE h, uint8_t* data, uint32_t length);
+int can_receive_char(CAN_HANDLE h, uint8_t* data);
+/**
+ * Transmit and receive data simultaniously, blocking.
+ *
+ * Note: txData == rxData is allowed.
+ *
+ * Errors: EINV_HANDLE, EBUSY, EPARAM
+ */
+int can_transceive(CAN_HANDLE h, const uint8_t* txData, uint8_t* rxData,
+        uint32_t length);
+int can_transceive_char(CAN_HANDLE h, uint8_t txData, uint8_t* rxData);
+/**
+ * Set the chip select (high != 0) or clear it (high == 0).
+ *
+ * Errors: EINV_HANDLE
+ */
+int can_cs(CAN_HANDLE h, uint8_t high);
+#endif
+
+

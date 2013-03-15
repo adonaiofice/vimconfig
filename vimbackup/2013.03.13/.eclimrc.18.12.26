@@ -17,8 +17,8 @@
 :inoremap <C-h> <C-x><C-u>
 
 "VICTORY! Ctrl+PageUp/PageDown functionality
-":nmap <silent> <C-PageUp> :call eclim#vimplugin#FeedKeys('Ctrl+PageUp')<cr>
-":nmap <silent> <C-PageDown> :call eclim#vimplugin#FeedKeys('Ctrl+PageDown')<cr>
+:nmap <silent> <C-PageUp> :call eclim#vimplugin#FeedKeys('Ctrl+PageUp')<cr>
+:nmap <silent> <C-PageDown> :call eclim#vimplugin#FeedKeys('Ctrl+PageDown')<cr>
 
 "Map Ctrl+Shift+B to set new breakpoint
 :nmap <C-d> :call eclim#vimplugin#FeedKeys('Ctrl+Shift+B')<cr>

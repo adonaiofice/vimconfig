@@ -9,9 +9,8 @@ In C:\Program Files (x86)\Vim
 In C:\Program Files (x86)\Vim\vim73
 	mklink mswin.vim [$HOME]\.vim\mswin.vim
 
-Linux instructions:
-	ln -s ~/.vim/.vimrc ~/.vimrc
-	ln -s ~/.vim/.gvimrc ~/.gvimrc
+Linux instructions, inside ~/:
+	ln -s
 
 
 Misc: Ubuntu use dconf-editor

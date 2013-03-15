@@ -4,7 +4,8 @@ set gfn=Consolas:h10
 "colorscheme desert
 else
 	"if has('unix')
-		set guifont=WenQuanYi\ Micro\ Hei\ Mono\ 10
+		set gfn=Liberation\ Mono:h10
+		"set gfn=Monospace:h10
 	"endif
 endif
 

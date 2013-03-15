@@ -1,0 +1,293 @@
+#include <string.h>
+
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
+#include <semphr.h>
+#include "het.h"
+#include "sci.h"
+#include "sys_vim.h"
+#include "tesla/bc_debug.h"
+#include "tesla/ringbuffer.h"
+#include "tesla/interrupt.h"
+
+
+void bc_debug_state( int state );
+void bc_debug_service ( void );
+static void bc_debug_events( void *param );
+
+/* Debug flag.
+ * Set to 1 to show the state on the LEDS on the Dev Kit.
+ */
+#define BC_APP_DEBUG 0
+
+
+#define	BC_DEBUG_TASK_PRIORITY   ( tskIDLE_PRIORITY + 1 )
+#define BC_STATUS_FREQ            ( 200 / portTICK_RATE_MS )
+#define BC_UART_BUFF              16000
+#define BC_UART_BAUD_RATE         19200U
+
+#define BC_DEBUG_MSG_TX_WAKEUP    0x1000U
+#define BC_DEBUG_MSG_TX_IRQ_DONE  0x1001U
+
+static ringbuffer *     bc_debug_tx_buff = NULL;
+static xQueueHandle     bc_debug_mq      = NULL;
+static xSemaphoreHandle bc_debug_lock    = NULL;
+
+/* the sci register of the peripheral we use */
+static sciBASE_t* usedSciREG = scilinREG;
+
+/* UART interrupt handler. */
+__interrupt void bc_debug_sci_irq( void );
+
+enum
+{
+   STATE_OFFLINE = 1,
+   STATE_WAKE,
+   STATE_BEGIN_TX,
+   STATE_IRQ_TX,
+   STATE_REQ_WAKE,
+   STATE_INVALID
+};
+
+void bc_debug_state ( int state ) {
+#if BC_APP_DEBUG
+    //17, 31, 0,
+    gioSetBit( hetPORT1, 0,  (state & 0x1) == 0x1);
+    gioSetBit( hetPORT1, 31, (state & 0x2) == 0x2);
+    gioSetBit( hetPORT1, 17, (state & 0x4) == 0x4);
+#endif
+}
+
+void bc_debug_service ( void )
+{
+    bc_debug_tx_buff = ring_create(BC_UART_BUFF);
+    bc_debug_mq = xQueueCreate( 32UL, ( unsigned portBASE_TYPE ) sizeof( uint32_t ) );
+    bc_debug_lock = xSemaphoreCreateMutex();
+
+#if BC_APP_DEBUG
+    gioSetDirection( hetPORT1, 0xFFFFFFFFU );
+#endif
+
+    /* If the queue/semaphore was created correctly then setup the serial port
+    hardware. */
+    if( (bc_debug_tx_buff != NULL) && (bc_debug_mq != 0) && (bc_debug_lock != NULL) )
+    {
+        sciInitGeneric(usedSciREG, BC_UART_BAUD_RATE);
+
+
+        irq_set_handler(IRQ_CH_LIN_HIGH, &bc_debug_sci_irq);
+        //vimRAM->ISR[14] = &bc_debug_sci_irq;
+        irq_enable(IRQ_CH_LIN_HIGH);
+//        vimREG->REQMASKSET[0] = (1U<<13);
+
+        bc_debug_state(STATE_OFFLINE);
+
+        xTaskCreate( bc_debug_events, ( signed char * ) "BCDebug", configMINIMAL_STACK_SIZE, NULL, BC_DEBUG_TASK_PRIORITY, NULL );
+    } else {
+        // panic?
+    }
+}
+static void bc_debug_send_tx ( uint8_t value ) {
+    // If the send_tx function is called out of sync
+    // somehow (which is should not) the TX is protected
+    // by this awesome (terrible) while loop. In normal
+    // perfectly synchronized message passing, this would
+    // not happen (and the loop would be a nop).
+
+    /* Wait until IDLE idle period is finished */
+    while ( (usedSciREG->FLR & SCI_IDLE) != 0U )
+    {
+        /* wait - TODO: gracefully degrade
+           (i.e. add a delay if this isn't
+           available after 25 tries. With that
+           said, the state machine is designed
+           to avoid sending more data before
+           the last character is transmitted. */
+    }
+
+    /* Need to send first byte before interrupts flags are set. */
+    usedSciREG->TD = value;
+
+    /* Enable the TX interrupt. */
+    usedSciREG->SETINT = SCI_TX_INT;
+}
+
+static void bc_debug_events( void *param )
+{
+    uint32_t msg;
+    uint32_t active = 0U;
+    uint8_t value = (uint8_t) '?';
+    for ( ;; )
+    {
+        // This queue waits until a message arrives.
+        // It never times out. So it may be smart
+        // to add code to responds to a locked up
+        // TX. I don't think it's needed.
+        if( xQueueReceive( bc_debug_mq, &msg, portMAX_DELAY ) == pdTRUE )
+        {
+            switch ( msg )
+            {
+            case BC_DEBUG_MSG_TX_WAKEUP:
+                if ( active == 0U )
+                {
+                    bc_debug_state(STATE_WAKE);
+                    if ( xSemaphoreTake (bc_debug_lock, portMAX_DELAY) == pdTRUE )
+                    {
+                        if ( ring_length(bc_debug_tx_buff) > 0 ) {
+                            // nothing to do.
+                            // post a TX done message to ourselves because
+                            // the code path is the same to write the UART.
+                            active = 1U;
+                            msg = BC_DEBUG_MSG_TX_IRQ_DONE;
+                            xQueueSend( bc_debug_mq, &msg, portMAX_DELAY );
+                        } else {
+                            // nothing to do - tx msg would bail out anyways.
+                        }
+                        xSemaphoreGive (bc_debug_lock);
+                    }
+                    else
+                    {
+                        // this should not happen (w.r.t api spec)
+                        // but if it does, ignore.
+                    }
+                }
+                else
+                {
+                    // the port was already transmitting -- no go!
+                    // If we did try to send another byte, there would
+                    // be a conflict. The driver does protect against
+                    // such an event if one did make it through, however
+                    // at the expense of a while(1) loop.
+                }
+                break;
+            case BC_DEBUG_MSG_TX_IRQ_DONE:
+                if ( active != 0U ) {
+                    if ( xSemaphoreTake (bc_debug_lock, portMAX_DELAY) == pdTRUE )
+                    {
+                        bc_debug_state(STATE_BEGIN_TX);
+                        if ( ring_length(bc_debug_tx_buff) == 0 )
+                        {
+                            active = 0U; // nothing else to do!
+                        }
+                        else
+                        {
+                            active = 1U;
+                            if ( ring_read(bc_debug_tx_buff, &value, 1) != 1 )
+                            {
+                                // abort on failure to read the ring buffer?
+                                // it alleges there is data to be transfered
+                                // but found none.
+                                active = 0U;
+                            }
+                        }
+
+                        xSemaphoreGive (bc_debug_lock);
+
+                        // unlock here
+                        if ( active )
+                        {
+                            bc_debug_send_tx(value);
+                        }
+                    }
+                    else
+                    {
+                        // this should not happen (w.r.t api spec)
+                        // but if it does, ignore.
+                    }
+                } else {
+                    // similarly, if we continue to get TX done messages
+                    // we know there's a problem. Like most problems in life...
+                    // just ignore em.
+                }
+                break;
+            default:
+                bc_debug_state(STATE_INVALID);
+                // bad message - abort
+                break;
+            }
+        }
+    }
+}
+
+void bc_debug (const char * msgTxt) {
+    uint32_t msg;
+    size_t wasActive;
+    // if the serial port hasn't been initialized then
+    // we can't do much...
+    if ( (bc_debug_tx_buff == NULL) ||
+         (bc_debug_lock == NULL) ||
+         (bc_debug_mq == NULL) )
+    {
+        return;
+    }
+    // obviously don't try to send nothing!
+    if ( strlen(msgTxt) == 0 )
+    {
+        return;
+    }
+
+    // TODO: determine a block time
+    if ( xSemaphoreTake (bc_debug_lock, portMAX_DELAY) != pdTRUE )
+    {
+        return; // this should not happen (per api spec), but if so, skip.
+    }
+
+    wasActive = ring_length(bc_debug_tx_buff);
+
+    bc_debug_state(STATE_REQ_WAKE);
+    ring_write(bc_debug_tx_buff, msgTxt, strlen(msgTxt));
+
+    // send message before unlocking - why?
+    // because another caller from another process
+    // may try to send the same message. The message
+    // is only sent when the TX isn't active.
+    if ( wasActive == 0 )
+    {
+        msg = BC_DEBUG_MSG_TX_WAKEUP;
+        xQueueSend( bc_debug_mq, &msg, portMAX_DELAY );
+    }
+
+    // unlock here
+    xSemaphoreGive (bc_debug_lock);
+}
+
+__interrupt void bc_debug_sci_irq( void )
+{
+    /* xHigherPriorityTaskWoken must be initialised to pdFALSE. */
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    portBASE_TYPE xVectorValue = usedSciREG->INTVECT0;
+    uint32_t msg;
+    char cChar;
+
+    switch( xVectorValue )
+    {
+        case 11:
+            /* Receive buffer full interrupt, send received char to queue */
+            // Reading data clears the interrupt.
+            cChar = usedSciREG->RD;
+            // We currently don't handle received data.
+            break;
+
+        case 12:
+            bc_debug_state(STATE_IRQ_TX);
+            if ( bc_debug_mq ) {
+                msg = BC_DEBUG_MSG_TX_IRQ_DONE;
+                portBASE_TYPE s = xQueueSendFromISR( bc_debug_mq, &msg, &xHigherPriorityTaskWoken );
+            }
+            usedSciREG->CLRINT = SCI_TX_INT;
+            break;
+
+        default:
+            /* unused interrupt, clear flags */
+            usedSciREG->FLR = (uint32_t) 0x07000003U;
+    }
+
+    /* If calling xQueueSendFromISR() above caused a task to leave the blocked
+    state, and the task that left the blocked state has a priority above the
+    task that this interrupt interrupted, then xHighPriorityTaskWoken will have
+    been set to pdTRUE.  If xHigherPriorityTaskWoken equals true then calling
+    portYIELD_FROM_ISR() will result in this interrupt returning directly to the
+    unblocked task. */
+    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+}

@@ -1,0 +1,17 @@
+can_config_t can_configurations[3];
+
+uint32_t get_irq_number()
+{
+    // Put this in VIM
+}
+
+
+// Interrupt handler
+
+static void can_1_message_isr(void)
+{
+    // Read from VIM which CAN peripheral fired
+    // access proper can configurations and function callbacks
+}
+
+

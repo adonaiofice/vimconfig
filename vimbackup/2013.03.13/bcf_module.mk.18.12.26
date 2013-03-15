@@ -1,0 +1,21 @@
+ifneq ($(BCEEPROM),N)
+
+LOCAL_PATH   := $(THIS_DIR)
+include $(CLEAR_VARS)
+
+LOCAL_NAME   := bceeprom
+
+LOCAL_INC_LIBS = freertos eeprom debug sci ringbuffer clock
+LOCAL_INC    += \
+                $(BASE_PATH)/include/tms570 \
+                $(BASE_PATH)/include/freertos \
+                $(BASE_PATH)/include/freertos_tms570 \
+
+LOCAL_SOURCE += \
+                main.c \
+                bc_status_service.c \
+                gio.c
+
+include $(BUILD_IMAGE)
+endif
+

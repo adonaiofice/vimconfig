@@ -3,9 +3,9 @@ if has('win32')
 set gfn=Consolas:h10
 "colorscheme desert
 else
-	"if has('unix')
-		set guifont=WenQuanYi\ Micro\ Hei\ Mono\ 10
-	"endif
+	if has('unix')
+		set gfn=Liberation\ Mono:h10
+	endif
 endif
 
 " GVIM Windows corrections:
@@ -18,5 +18,5 @@ endif
 if has ('win32')
     so ~/.vim/.eclimrc
 else
-    "eclimd -f ~/.vim/.eclimrc
+    eclimd -f ~/.vim/.eclimrc
 endif

@@ -53,7 +53,7 @@ set showcmd "shows pressed keys/commands
 set ruler	" show ruler
 
 " Make arrow / other keys work:
-if !has('win32') && !has('win64') && has('gui_running')
+if !has('win32') && !has('win64')
 	set term=$TERM
 endif
 
@@ -240,7 +240,6 @@ else
 		:set directory=~/vimswap
 		" Undo files for persistent undo:
 		:set undodir=~/.vim/vimundo
-	endif
 endif
 
 
