@@ -1,0 +1,13 @@
+// canInit registers:
+
+canInit()
+CAN1:
+    CTL: 0x00011401 -> 0x00030006
+    BTR: 0x0000278E
+CAN2:
+    CTL: 0x00011401 -> 0x0003000A
+    BTR: 0x0000278E
+
+can_open()
+CAN1:   0x0203284E
+CAN2:   0x02031402

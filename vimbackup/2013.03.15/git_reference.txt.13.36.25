@@ -1,0 +1,45 @@
+// View timeline in colors:
+git config --global alias.timeline "log --graph --decorate --pretty=oneline --abbrev-commit --all"
+
+// Git stash:
+
+// Recover popped stash commit references
+git fsck --no-reflog | awk '/dangling commit/ {print $3}'
+
+// View every single commit in repository ever
+gitk --all $( git fsck --no-reflog | awk '/dangling commit/ {print $3}' )
+
+// Apply previous stash:
+git stash apply <stash's SHA1>
+
+// Applying a stash, maintain deleted / moved files:
+git stash pop --index
+
+// Creating a branch from a Stash
+git stash branch <newbranchname>
+    // creates a new branch, checks out the commit you were on when
+    // you stashed your work, reapplies your work there, then applies
+    // the stash if successful
+
+
+// Git merge conflict replace files:
+git pull                             # fetch/merge partners changes
+# merge fails, conflict
+git checkout origin FILE_TO_REPLACE  # replace changes with partners ver
+git commit                           # finish merge
+
+// Git branch off another branch
+$ git checkout -b myFeature dev
+Creates MyFeature branch off dev. Do your work and then
+
+$ git commit -am "Your message"
+Now merge your changes to dev without a fast-forward
+
+$ git checkout dev
+$ git merge --no-ff myFeature
+edit
+
+Now push changes to the server
+
+$ git push origin dev
+$ git push origin myFeature

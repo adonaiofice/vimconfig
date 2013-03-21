@@ -1,0 +1,31 @@
+#include <can.h>
+
+can_config_t can_configurations[3];
+
+uint32_t get_irq_number()
+{
+    // Put this in VIM
+}
+
+
+/**
+ * Interrupt handler:
+ *
+ * - check functions for NULL, don't call
+ * Transmit (mBox 1) - function callback
+ * Receive (mBox 2) -
+ *  1. Get ID, length + data pointer (pointer to IFDATA register)
+ *  function callback - function responsible for handling the received data
+ *  and putting into appropriate message format
+ *
+ */
+
+
+
+static void can_message_isr(void)
+{
+    // Read from VIM which CAN peripheral fired
+    // access proper can configurations and function callbacks
+}
+
+

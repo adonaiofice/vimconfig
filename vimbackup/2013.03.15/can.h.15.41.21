@@ -1,0 +1,238 @@
+/**
+ * Can Driver Interface
+ *
+ */
+
+#ifndef __CAN_H
+#define __CAN_H
+
+#include <stdint.h>
+#include <reg_can.h>
+#include <sys_common.h>
+
+#if 0
+typedef CAN_HANDLE uint32_t
+#else
+typedef struct {
+    uintptr_t handle;
+} CAN_HANDLE;
+#endif
+
+/**
+ * List of defines:
+ */
+
+/** Processor Specific: MOVE! */
+#define CAN_NUMBER_OF_PORTS         3
+#define CAN_NUMBER_MESSAGE_BOXES    64
+
+/** Extended ID options */
+typedef enum
+{
+    CAN_ID_LENGTH_STANDARD,
+    CAN_ID_LENGTH_EXTENDED
+} CAN_ID_OPTIONS;
+
+/** RAM Parity options */
+typedef enum
+{
+    CAN_RAM_PARITY_DISABLE,
+    CAN_RAM_PARITY_ENABLE
+} CAN_RAM_PARITY;
+
+
+/**
+ * Call-back functions for transmit / receive interrupt handling
+ *
+ * (*can_rx_ISR_t) - Receive message handler function
+ *
+ * @brief Intended for a task handler function that would package the raw data
+ * into a proper message format and post to queue
+ *
+ * @param[in] message_ID
+ * @param[in] data - pointer to data bytes
+ * @param[in] data_length
+ *
+ * (*can_tx_ISR_t) - Transmit message handler function
+ *
+ * @brief Handler function called upon successful transmission of CAN message
+ *          May be used for setting flag indicating CAN is ready to transmit
+ *          next message
+ *
+ * @param none
+ *
+ */
+
+typedef void (*can_rx_ISR_t) (uint32_t message_ID,
+                              const uint8_t * data,
+                              uint8_t data_length);
+typedef void (*can_tx_ISR_t) (void);
+
+typedef struct can_ISR_config
+{
+    can_rx_ISR_t can_message_rx_ISR; /** default: NULL */
+    can_tx_ISR_t can_message_tx_complete; /** default: NULL */
+} can_ISR_config_t;
+
+/*** Driver generic methods ***/
+/**
+ * @fn int can_open (CAN_HANDLE *h, uint32_t peripheral_id)
+ *
+ * @brief Open a CAN peripheral. Every peripheral may be opened by only one
+ * task at a time.
+ *
+ * The peripheral is configured with the default values of can_set_config.
+ *
+ * @param[out] h - pointer to the CAN_HANDLE. Unique handle that maps to specific
+ *              CAN peripheral.
+ * @param[in] peripheral_id - indicate which peripheral to open
+ *
+ * @return 0 if success, else one of the following errors:
+ *         - EPARAM Parameter out of range
+ *         - EBUSY Device is already opened
+ */
+int can_open (CAN_HANDLE *h, uint32_t peripheral_id);
+
+
+/** @struct can_config
+ *
+ * @brief Configuration values for CAN peripheral
+ *
+ * @var baudrate - maximum allowed baudrate, in kBits/s
+ * Important notes:
+ *      - Maximum allowed baudrate is VCLK/2
+ *      - Baudrate values implemented with assumed CLK = 100 MHz, VCLK = 50 MHz
+ *          - if different clock rate, must recalculate values
+ *      - Bit time (1/baudrate) must be integer multiple of CAN clk period
+ *      - Implemented baudrate values:
+ *          1000 kBits/s
+ *          500 kBits/s (default)
+ *          250 kBits/s
+ *          125 kBits/s
+ *
+ * @var id_extension - Option to use extended CAN message IDs (not implemented)
+ *          - CAN_ID_LENGTH_STANDARD
+ *          - CAN_ID_LENGTH_EXTENDED
+ *
+ * @var enable_ram_parity - Option to enable Ram parity
+ *          - CAN_RAM_PARITY_DISABLE
+ *          - CAN_RAM_PARITY_ENABLE
+ *
+ * @var can_message_rx_ISR - Callback method for message handling task to handle
+ *              received CAN message
+ *
+ * @var can_message_tx_complete - Callback method for indicating successful
+ *              transmission of CAN message
+ *
+ */
+
+typedef struct can_config
+{
+    uint32_t baudrate; /** default: 500 kBits/s */
+    uint8_t id_extension;   /** default: CAN_ID_LENGTH_STANDARD */
+    uint8_t ram_parity_enable; /** default: CAN_RAM_PARITY_DISABLE */
+    can_rx_ISR_t can_message_rx_ISR; /** default: NULL */
+    can_tx_ISR_t can_message_tx_complete; /** default: NULL */
+} can_config_t;
+
+
+/**
+ * @fn int can_set_config(CAN_HANDLE h, const can_config_t* options)
+ *
+ * @brief Initialise the CAN peripheral with specified configuration values
+ *
+ * @param[in] h Handle to CAN peripheral
+ * @param[in] config Configuration options for the CAN peripheral, if set to NULL,
+ *            default values will be set
+ *
+ *
+ * @note Values of 0 in the variables of can_config_t struct are replaced
+ * by the defaults as described in the comments of the struct.
+ *
+ * @return 0 if success, else one of the following errors:
+ *         - EPARAM
+ *         - EINV_HANDLE
+ */
+int can_set_config(CAN_HANDLE h, const can_config_t* options);
+
+
+/**
+ * can_message_box_config()
+ *
+ * This will be added later!!
+ *
+ * @default Transmit and Receive are each assigned to one message box, receive
+ *          accepts all messages
+ *
+ * @note Future functionality will include ability to set direction, mask, &
+ *       filter for each CAN message box
+ *       optional: setting data length
+ *
+ *
+ */
+
+//int can_message_box_config();
+
+
+/**
+ * @fn can_transmit_message(CAN_HANDLE h, uint32_t can_message_ID, uint8_t * data,
+ *                          uint8_t data_length)
+ * @brief Transmit message, blocking call (change later)
+ *        Only one task should be using this interface at a time,
+ *        such as the message-handler task.
+ *        The next message should only be transmitted after a
+ *        can_message_tx_complete interrupt has triggered.
+ *
+ * @param[in] can_message_ID - message ID
+ * @param[in] data - pointer to data bytes
+ * @param[in] data_length - number of bytes to be transmitted, 0 - 8
+ *
+ * @return 0 if success, else one of the following errors:
+ *         - EPARAM
+ *         - EINV_HANDLE
+ */
+int can_transmit_message(CAN_HANDLE h, uint32_t can_message_ID,
+                         uint8_t * data, uint8_t data_length);
+
+/**
+ * @fn int can_sleep(CAN_HANDLE h)
+ *
+ * @brief Allow a CAN peripheral to go to sleep mode.
+ *
+ * @note A CAN peripheral will only sleep if all transmit requests have been
+ *       completed and the CAN bus is idle
+ *
+ * @return 0 if success, else one of the following errors:
+ *         - EINV_HANDLE
+ *         - ESLEEP The device was already allowed to sleep.
+ */
+int can_sleep(CAN_HANDLE h);
+    // Local power down mode
+
+/**
+ * @fn int can_wakeup(CAN_HANDLE h)
+ *
+ * @brief Require the CAN peripheral to wake up, blocking.
+ *
+ * @return 0 if success, else one of the following errors:
+ *         - EINV_HANDLE
+ *         - EBUSY The device was already awake.
+ */
+int can_wakeup(CAN_HANDLE h);
+
+
+/**
+ * @fn int can_close(CAN_HANDLE* h)
+ *
+ * @brief Close a CAN peripheral. Allows other users access to the peripheral.
+ *
+ * @note The handle will be set to an invalid value, to facilitate finding
+ * bugs due to calling methods with closed handles.
+ *
+ * @return 0 if success, else one of the following errors:
+ *         - EINV_HANDLE
+ */
+int can_close(CAN_HANDLE* h);
+
+#endif /* __CAN_H */
+

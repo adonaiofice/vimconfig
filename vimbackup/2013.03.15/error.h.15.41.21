@@ -1,0 +1,19 @@
+#ifndef TESLA_ERROR_H
+#define TESLA_ERROR_H
+
+enum error_nums {
+    EPARAM = 1,
+    EDEV_ID,
+    EUSED,
+    EFULL,
+    EEMPTY,
+    EACCESS,
+    ENO_OPEN,
+    EUNKNOWN,
+    EPROTECTED = 500
+};
+
+#define SUCCESS 0
+
+#endif
+

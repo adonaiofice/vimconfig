@@ -31,7 +31,7 @@
 
  if has('gui_running')
      "optional: gui=bold
-     hi def cCustomFunc  guifg=DeepSkyBlue ctermfg=162
+     hi def cCustomFunc  guifg=DodgerBlue ctermfg=162
      hi def link cCustomClass Function
  else
      " set default other configurations!

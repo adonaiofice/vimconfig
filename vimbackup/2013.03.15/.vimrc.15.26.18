@@ -33,7 +33,7 @@ syntax enable
 ":nnoremap <C-w> :tabclose<CR>
 :nnoremap <C-x> :tabclose<CR>
 :inoremap <C-t> <Esc>:tabnew<CR>
-":inoremap <C-w> <Esc>:tabclose<CR>
+:inoremap <C-w> <Esc>:tabclose<CR>
 
 " Open files always in new tabs - doesn't seem to work?
 "autocmd VimEnter * tab all
@@ -118,7 +118,7 @@ set nohidden
 " Display longest common text of all matches instead of just 1st item
 ":set completeopt=menu,longest
 
-":inoremap <expr> <CR>	pumvisible() ? "\<C-y>" : "\<CR>"
+:inoremap <expr> <CR>	pumvisible() ? "\<C-y>" : "\<CR>"
 
 " ======================== COMPLETION POPUP MENU
 

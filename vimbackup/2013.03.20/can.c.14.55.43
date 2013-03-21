@@ -1,0 +1,363 @@
+#include <drivers/can.h>
+#include <stdint.h>
+#include <error.h>
+#include <reg_can.h>
+#include <sys_common.h>
+
+static const canBASE_t* can_device_ptr[CAN_NUMBER_OF_PORTS] = {canREG1, canREG2, canREG3};
+static can_ISR_config_t can_callback_function[CAN_NUMBER_OF_PORTS];
+
+/* Defines */
+#define CAN_RESET   0x00000001U
+#define CAN_STD_ID_MASK 0x000007FFU
+#define CAN_EXT_ID_MASK 0x1FFFFFFFU
+
+#define CAN_DEFAULT_TX_BOX  1U
+#define CAN_DEFAULT_RX_BOX  2U
+
+/* Static Methods: */
+static CAN_HANDLE can_map_id_to_handle(uint32_t peripheral_id);
+static canBASE_t* can_handle_to_reg(CAN_HANDLE h);
+
+/**
+ * @fn static canBASE_t *can_map_id_to_reg(uint32_t peripheral_id)
+ *
+ * @brief Map peripheral ID to CAN device
+ *
+ * @return encoded CAN_HANDLE, else CAN_HANDLE = 0 if invalid parameter
+ *
+ */
+static CAN_HANDLE can_map_id_to_handle(uint32_t peripheral_id)
+{
+    CAN_HANDLE ret;
+    switch(peripheral_id)
+    {
+        case 1:
+            ret.handle = 0x01U;
+            break;
+        case 2:
+            ret.handle = 0x02U;
+            break;
+        case 3:
+            ret.handle = 0x03U;
+            break;
+        default:
+            ret.handle = 0;
+            break;
+    }
+
+    return ret;
+}
+
+/**
+ * @fn static canBASE_t *can_handle_to_reg(CAN_HANDLE h)
+ *
+ * @brief Map handle to associated canREG
+ *
+ * @return pointer to appropriate CAN register
+ */
+
+static canBASE_t* can_handle_to_reg(CAN_HANDLE h)
+{
+    canBASE_t* ret;
+
+    if(h.handle > 0 && h.handle <= CAN_NUMBER_OF_PORTS)
+    {
+        ret = (canBASE_t *)can_device_ptr[h.handle - 1];
+    }
+    else
+    {
+        ret = NULL;
+    }
+
+    return ret;
+}
+
+
+
+int can_open (CAN_HANDLE *h, uint32_t peripheral_id)
+{
+    canBASE_t *can_reg;
+    /* Check for valid CAN ID */
+    *h = can_map_id_to_handle(peripheral_id);
+
+    if(h->handle == 0)
+    {
+        return -EDEV_ID;
+    }
+
+    can_reg = (canBASE_t *)can_device_ptr[h->handle - 1];
+
+    /* Check if device is already operating */
+    if(!(can_reg->CTL & CAN_RESET))
+    {
+        h->handle = 0;
+        return -EBUSY;
+    }
+
+    /* Initialize the peripheral with default settings */
+    can_set_config(*h, NULL);
+
+    return SUCCESS;
+}
+
+int can_set_config(CAN_HANDLE h, const can_config_t* options)
+{
+    canBASE_t* can_reg = can_handle_to_reg(h);
+
+    if (can_reg == NULL)
+    {
+        return -EINV_HANDLE;
+    }
+
+    /** Init Mode */
+    can_reg->CTL = CAN_RESET;
+
+    {
+        uint32_t baudrate;
+        uint8_t id_extension;
+        uint8_t ram_parity_enable;
+        can_rx_ISR_t rx_callback_fn;
+        can_tx_ISR_t tx_callback_fn;
+
+        if (options == NULL)
+        {
+            /** Set default options */
+            baudrate = 500U;
+            id_extension = CAN_ID_LENGTH_STANDARD;
+            ram_parity_enable = CAN_RAM_PARITY_ENABLE;
+            rx_callback_fn = NULL;
+            tx_callback_fn = NULL;
+        }
+        else
+        {
+            baudrate = options->baudrate;
+            id_extension = (options->id_extension != 0U);
+            ram_parity_enable = (options->ram_parity_enable != 0U);
+            rx_callback_fn = options->can_message_rx_ISR;
+            tx_callback_fn = options->can_message_tx_complete;
+        }
+
+
+    can_reg->CTL = (1U << 25U) /** Wake up on bus activity when in sleep */
+                 | (1U << 17U) /** Enable low-level interrupts */
+                 | ((ram_parity_enable ? 0xAU : 0x5U) << 10U)
+                 | (1U << 6U) /** Allow access to BTR reg */
+                 | (1U << 3U) /** Error Interrupt Enable */
+                 | (1U << 2U) /** Status Change Interrupt Enable */
+                 | (1U << 1U) /** Enable high-level interrupts */
+                 | (1U); /** Initialization mode */
+
+    /** Clear all pending error flags and reset current status */
+    can_reg->ES = can_reg->ES;
+
+    /** Assign interrupt level for messages */
+    can_reg->INTMUXx[0U] = (0U << 1U)   /** MessageBox 1 */
+                         | (0U << 2U);   /** MessageBox 2 */
+
+    /** Auto bus on timer period */
+    can_reg->ABOTR = 0U;
+
+
+    /** Initialize MessageBox 1 (default: used for transmit) */
+
+    /** Wait until IF1 ready for use */
+    while ((can_reg->IF1STAT & 0x80U) ==0x80U)
+    {
+	} /* Wait */
+
+    /** Set message mask
+     * Options:
+     * - Mask Extended ID used for acceptance filtering
+     * - Message direction bit is used for acceptance filtering
+     * - Set acceptance filtering mask
+     */
+    can_reg->IF1MSK = (id_extension << 31U)
+                    | (1U << 30U)
+                    | ((0x00000003U & (id_extension ? CAN_EXT_ID_MASK : CAN_STD_ID_MASK)) << (id_extension ? 18U : 0U));
+    // TODO: change mask from 3 to 0 when done testing
+
+    /** Set message arbitration */
+    can_reg->IF1ARB = (1U << 31U) /** Message valid */
+                    | (id_extension << 30U) /** Extended identifier */
+                    | (1U << 29U) /** Message direction */
+                    | ((1U & (id_extension ? CAN_EXT_ID_MASK : CAN_STD_ID_MASK)) << (id_extension ? 18U : 0U)); /** Message ID */
+
+    /** Set message control word */
+    can_reg->IF1MCTL = (1U << 12U) /** Use Acceptance Mask */
+                     | (1U << 11U) /** Transmit Interrupt Enable */
+                     | (1U << 7U)  /** EoB */
+                     | (8U);       /** Data length */
+
+    /** Transfer info from IF1/IF2 registers to Message RAM
+     *  note: delay is 4 - 14 VBUS clock cycles
+     */
+    can_reg->IF1CMD = (1U << 7U)  /** Direction: write */
+                    | (1U << 6U)  /** Transfer Mask bits */
+                    | (1U << 5U)  /** Transfer Arbitration bits */
+                    | (1U << 4U)  /** Transfer Control bits */
+                    | (1U << 3U); /** ClearIntPnd */
+
+    can_reg->IF1NO = 1U;
+
+
+    /** Initialize MessageBox 2 (default: used for receive) */
+    while ((can_reg->IF2STAT & 0x80U) ==0x80U)
+    {
+	} /* Wait */
+
+    /** Set message mask
+     * Options:
+     * - Mask Extended ID used for acceptance filtering
+     * - Message direction bit is used for acceptance filtering
+     * - Set acceptance filtering mask
+     */
+    can_reg->IF2MSK = (id_extension << 31U)
+                    | (1U << 30U)
+                    | ((0x00000000U & (id_extension ? CAN_EXT_ID_MASK : CAN_STD_ID_MASK)) << (id_extension ? 18U : 0U));
+
+    /** Set message arbitration */
+    can_reg->IF2ARB = (1U << 31U) /** Message valid */
+                    | (id_extension << 30U) /** Extended identifier */
+                    | (0U << 29U) /** Message direction */
+                    | ((1U & (id_extension ? CAN_EXT_ID_MASK : CAN_STD_ID_MASK)) << (id_extension ? 18U : 0U)); /** Message ID */
+
+    /** Set message control word */
+    can_reg->IF2MCTL = (1U << 12U) /** Use Acceptance Mask */
+                     | (1U << 10U) /** Receive Interrupt Enable */
+                     | (8U);       /** Data length */
+
+    /** Transfer info from IF1/IF2 registers to Message RAM
+     *  note: delay is 4 - 14 VBUS clock cycles
+     */
+    can_reg->IF2CMD = (1U << 7U)  /** Direction: write */
+                    | (1U << 6U)  /** Transfer Mask bits */
+                    | (1U << 5U)  /** Transfer Arbitration bits */
+                    | (1U << 4U)  /** Transfer Control bits */
+                    | (1U << 3U); /** ClearIntPnd */
+
+    can_reg->IF2NO = 2U;
+
+    /** - Setup IF1 for data transmission
+    *     - Wait until IF1 is ready for use
+    *     - Set IF1 control byte
+    */
+    while ((can_reg->IF1STAT & 0x80U) ==0x80U)
+    {
+	} /* Wait */
+    can_reg->IF1CMD  = 0x87; /** Write, TxRqst/NewDat, Data A, Data B */
+
+    /** - Setup IF2 for reading data
+    *     - Wait until IF1 is ready for use
+    *     - Set IF1 control byte
+    */
+    while ((can_reg->IF2STAT & 0x80U) ==0x80U)
+    {
+	} /* Wait */
+    can_reg->IF2CMD = 0x17; /** Read, TxRqst/NewDat, Data A, Data B */
+
+
+    /** Configure bit timing */
+    switch(baudrate)
+    {
+        case 500U:
+            /**
+             *     - Setup baud rate prescaler extension
+             *     - Setup TSeg2
+             *     - Setup TSeg1
+             *     - Setup sample jump width
+             *     - Setup baud rate prescaler
+             */
+            can_reg->BTR = (0U << 16U) |
+                           ((6U - 1U) << 12U) |
+                           (((7U + 6U) - 1U) << 8U) |
+                           ((4U - 1U) << 6U) |
+                           4U;
+            break;
+
+        case 1000U:
+            can_reg->BTR = (0U << 16U) |
+                           ((1U - 1U) << 12U) |
+                           (((7U + 1U) - 1U) << 8U) |
+                           ((1U - 1U) << 6U) |
+                           4U;
+            break;
+
+        case 250U:
+            can_reg->BTR = (0U << 16U) |
+                           ((4U - 1U) << 12U) |
+                           (((3U + 4U) - 1U) << 8U) |
+                           ((4U - 1U) << 6U) |
+                           16U;
+            break;
+
+        case 125U:
+            can_reg->BTR = (0U << 16U) |
+                           ((3U - 1U) << 12U) |
+                           (((1U + 3U) - 1U) << 8U) |
+                           ((3U - 1U) << 6U) |
+                           49U;
+            break;
+        default:
+            return -EPARAM;
+            break;
+    }
+
+    /** - CAN Port output values */
+    can_reg->TIOC = (1U  << 18U )
+        | (0U  << 17U )
+        | (1U  << 3U )
+        | (0U  << 2U )
+        | (0U << 1U )
+        | (0U  );
+    can_reg->RIOC = (1U  << 18U )
+        | (0U  << 17U )
+        | (1U  << 3U )
+        | (0U  << 2U )
+        | (0U <<1U )
+        | (0U  );
+
+    /** Map function ISR callbacks to appropriate peripheral */
+    can_callback_function[h.handle - 1].can_message_rx_ISR = rx_callback_fn;
+    can_callback_function[h.handle - 1].can_message_tx_complete = tx_callback_fn;
+
+    /** - Leave configuration and initialization mode  */
+    can_reg->CTL &= ~(0x00000040U | CAN_RESET);
+    }
+
+    return SUCCESS;
+}
+
+
+/**
+ * Return highest priority interrupt number that has triggered IRQ
+ */
+uint32_t get_irq_number()
+{
+    // Put this in VIM
+    return 0;
+}
+
+
+/**
+ * Interrupt handler:
+ *
+ * - check functions for NULL, don't call
+ * Transmit (mBox 1) - function callback
+ * Receive (mBox 2) -
+ *  1. Get ID, length + data pointer (pointer to IFDATA register)
+ *  function callback - function responsible for handling the received data
+ *  and putting into appropriate message format
+ *
+ */
+
+
+
+static void can_message_isr(void)
+{
+    // Read from VIM which CAN peripheral fired
+    // msg byte order messed up, read message & arrange properly
+    // access proper can configurations and function callbacks
+}
+
+

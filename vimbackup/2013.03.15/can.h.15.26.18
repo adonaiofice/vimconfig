@@ -22,7 +22,7 @@ typedef void (*can_tx_ISR_t) (void);
 
 /*** Driver generic methods ***/
 /**
- * Open a CAN peripheral. Every peripheral may be opened by one task at a time.
+ * Open a CAN peripheral. Every peripheral may be opened by only one task at a time.
  * Map interrupt handler for CAN to default
  *
  * @param peripheral_id

@@ -1,0 +1,23 @@
+ifneq ($(TEST_CAN),Y)
+
+LOCAL_PATH   := $(THIS_DIR)
+include $(CLEAR_VARS)
+
+LOCAL_NAME   := testcan
+
+LOCAL_INC_LIBS = freertos debug sci ringbuffer clock flash can_gen interrupt message
+LOCAL_INC    += \
+                $(BASE_PATH)/include/tms570 \
+                $(BASE_PATH)/include/tesla \
+                $(BASE_PATH)/include/freertos \
+                $(BASE_PATH)/include/freertos_tms570 \
+
+LOCAL_SOURCE += \
+                main.c \
+		notification.c \
+                gio.c \
+		het.c \
+
+include $(BUILD_IMAGE)
+endif
+

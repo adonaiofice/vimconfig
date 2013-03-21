@@ -33,7 +33,7 @@ syntax enable
 ":nnoremap <C-w> :tabclose<CR>
 :nnoremap <C-x> :tabclose<CR>
 :inoremap <C-t> <Esc>:tabnew<CR>
-":inoremap <C-w> <Esc>:tabclose<CR>
+:inoremap <C-w> <Esc>:tabclose<CR>
 
 " Open files always in new tabs - doesn't seem to work?
 "autocmd VimEnter * tab all
@@ -118,7 +118,7 @@ set nohidden
 " Display longest common text of all matches instead of just 1st item
 ":set completeopt=menu,longest
 
-":inoremap <expr> <CR>	pumvisible() ? "\<C-y>" : "\<CR>"
+:inoremap <expr> <CR>	pumvisible() ? "\<C-y>" : "\<CR>"
 
 " ======================== COMPLETION POPUP MENU
 
@@ -187,11 +187,11 @@ nmap <silent> <A-Down> :wincmd j<CR>
 nmap <silent> <A-Left> :wincmd h<CR>
 nmap <silent> <A-Right> :wincmd l<CR>
 
-" Easier resizing windows - conflicts with moving in windows
-"nnoremap <A-Up> <C-w>+
-"nnoremap <A-Down> <C-w>-
-"nnoremap <A-Left> <C-w><
-"nnoremap <A-Right> <C-w>>
+" Easier resizing windows
+nnoremap <A-Up> <C-w>+
+nnoremap <A-Down> <C-w>-
+nnoremap <A-Left> <C-w><
+nnoremap <A-Right> <C-w>>
 
 " Wrapped lines goes down/up to next row, rather than next line in file.
 nnoremap j gj

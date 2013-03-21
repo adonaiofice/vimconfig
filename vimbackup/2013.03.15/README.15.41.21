@@ -1,0 +1,6 @@
+/***** CAN Reference Files *****/
+
+// All with GCLK = 100MHz, VCLK = 50MHz
+
+"can_01.c"
+- bitrate 500 kBits/s

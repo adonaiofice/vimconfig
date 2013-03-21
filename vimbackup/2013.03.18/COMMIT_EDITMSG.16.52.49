@@ -1,0 +1,25 @@
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch user/aguden/can_reconfigure_folders
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#	modified:   firmware/images/test/can/bcf_module.mk
+#	modified:   firmware/images/test/can/main.c
+#	modified:   firmware/images/test/can/notification.c
+#	new file:   firmware/images/test/can_gen/bcf_module.mk
+#	new file:   firmware/images/test/can_gen/gio.c
+#	new file:   firmware/images/test/can_gen/het.c
+#	new file:   firmware/images/test/can_gen/main.c
+#	new file:   firmware/images/test/can_gen/notification.c
+#	modified:   firmware/libraries/drivers/can/can.c
+#	deleted:    firmware/libraries/drivers/can/can_api.c
+#	renamed:    firmware/libraries/drivers/can/can.c -> firmware/libraries/drivers/can/can_gen.c
+#	new file:   firmware/libraries/drivers/can_generated/bcf_module.mk
+#	new file:   firmware/libraries/drivers/can_generated/can_gen.c
+#	modified:   include/tesla/drivers/can.h
+#	modified:   include/tesla/error.h
+#	renamed:    include/tms570/can.h -> include/tms570/can_gen.h
+#	modified:   include/tms570/sys_selftest.h
+#

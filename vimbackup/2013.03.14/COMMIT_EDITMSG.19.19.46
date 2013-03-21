@@ -1,0 +1,66 @@
+Merge branch 'master' of git://github.com/adonaiofice/vimconfig
+
+Conflicts:
+	vimviews/~=+.vim=+.gvimrc=1.vim
+	vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+libraries=+vector_interrupt_manager=+interrupt.c=1.vim
+#
+# It looks like you may be committing a merge.
+# If this is not correct, please remove the file
+#	.git/MERGE_HEAD
+# and try again.
+
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch master
+# Your branch and 'origin/master' have diverged,
+# and have 1 and 1 different commit each, respectively.
+#
+# Changes to be committed:
+#
+#	new file:   .gitignore
+#	modified:   .gvimrc
+#	new file:   vimbackup/2013.03.13/.gvimrc.15.30.28
+#	new file:   vimbackup/2013.03.13/.gvimrc.15.52.31
+#	new file:   vimbackup/2013.03.13/.vimrc.15.47.33
+#	new file:   vimbackup/2013.03.13/TODO_List.txt.15.52.31
+#	new file:   vimbackup/2013.03.13/TODO_List.txt.15.54.01
+#	new file:   vimbackup/2013.03.13/TODO_List.txt.15.55.21
+#	new file:   vimbackup/2013.03.13/interrupt.c.15.30.28
+#	new file:   vimbackup/2013.03.13/interrupt.h.15.30.28
+#	new file:   vimbackup/2013.03.13/main.c.15.30.28
+#	new file:   vimbackup/2013.03.13/main.c.15.57.52
+#	new file:   vimbackup/2013.03.14/.gitignore.19.19.34
+#	new file:   vimbackup/2013.03.14/COMMIT_EDITMSG.19.15.54
+#	new file:   vimbackup/2013.03.14/Notes_03_04_2013_Test_Interface.txt.10.03.38
+#	new file:   vimbackup/2013.03.14/Notes_03_14_2013_TMS570_Linux_Setup.txt.10.03.38
+#	new file:   vimbackup/2013.03.14/TODO_List.txt.10.03.38
+#	modified:   vimundo/C%%Users%aguden%.vim%.gvimrc
+#	modified:   vimundo/C%%Users%aguden%Documents%Notes%Notes_03_04_2013_Test_Interface.txt
+#	modified:   vimundo/C%%Users%aguden%Documents%Notes%TODO_List.txt
+#	deleted:    vimviews/C=-=+Program Files (x86)=+Vim=+_vimrc=1.vim
+#	deleted:    vimviews/~=+.gvimrc=1.vim
+#	deleted:    vimviews/~=+.vim=+.eclimrc=1.vim
+#	deleted:    vimviews/~=+.vim=+.gvimrc=1.vim
+#	deleted:    vimviews/~=+.vim=+.vimrc=1.vim
+#	deleted:    vimviews/~=+.vim=+README=1.vim
+#	deleted:    vimviews/~=+.vimrc=1.vim
+#	deleted:    vimviews/~=+Desktop=+vmware-tools-distrib=+INSTALL=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+.git=+COMMIT_EDITMSG=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+.git=+MERGE_MSG=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+images=+bc=+app=+bcf_module.mk=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+images=+bc=+flash=+bcf_module.mk=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+images=+test=+can=+bcf_module.mk=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+images=+test=+can=+main.c=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+images=+test=+can=+notification.c=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+libraries=+debug=+bcf_module.mk=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+libraries=+freertos=+tms570_sys=+sys_startup.c=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+libraries=+vector_interrupt_manager=+bcf_module.mk=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+firmware=+libraries=+vector_interrupt_manager=+interrupt.c=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+include=+tesla=+bc_core.h=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+include=+tesla=+bc_debug.h=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+include=+tesla=+bc_iodev.h=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+include=+tesla=+drivers=+can.h=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+include=+tms570=+het.h=1.vim
+#	deleted:    vimviews/~=+Documents=+TMS570=+BodyControl=+bodycontrol=+include=+tms570=+pinmux.h=1.vim
+#

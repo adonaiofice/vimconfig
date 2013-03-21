@@ -1,0 +1,36 @@
+/***** CAN Reference Files *****/
+
+// All with GCLK = 100MHz, VCLK = 50MHz
+
+"can_01.c"
+- bitrate 500 kBits/s
+
+"can_02.c"
+- bitrate 500 kBits/s
+- Enable RAM parity
+
+"can_03.c"
+- bitrate 500 kBits/s
+- canTransmitMessage - modify ID + DLC inside function
+- receives to messageBox4 - mask = 0, accept all IDs
+
+"can_04.c"
+- bitrate 500 kBits/s
+- ID extension
+
+"can_05.c"
+- bitrate 125 kBits/s
+- Enable RAM parity
+
+"can_06.c"
+- bitrate 250 kBits/s
+- Enable RAM parity
+
+"can_07.c"
+- bitrate 1000 kBits/s
+- Enable RAM parity
+
+"can_08.c"
+- bitrate 500 kBits/s
+- canTransmitMessage - modify ID + DLC inside function
+- main: send Task 1 & 3 to MB #1, Task 2 to MB #2
